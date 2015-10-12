@@ -1,4 +1,17 @@
 
+class LREP::Request {
+  has $.context is rw;
+  has $.cmd is rw;
+}
+
+class LREP::Response {
+  has $.output is rw = "";
+
+  method append($text) {
+    $.output ~= $text;
+  }
+}
+
 class LREP {
 
   use Linenoise;
@@ -11,24 +24,25 @@ class LREP {
   has $.composed is rw;
 
   # Ignore &handler
-  sub ident_middleware(&handler) {
+  sub null_middleware(&handler) {
     # say "Building ident_middlware with [{&handler.perl}]";
     -> $input {
-      $input;
+      LREP::Response.new(output => $input.cmd);
     }
   }
 
   sub eval_middleware(&handler) {
     # say "Building eval_middlware with [{&handler.perl}]";
     -> $input {
-      my $result = "";
+      my $result = LREP::Response.new;
       if $input {
-        $result = EVAL $input, context => $context;
+        my $eval_result = EVAL $input, context => $context;
+        $input.cmd = $eval_result;
         $result = &handler($result);
       }
       CATCH {
         default {
-          $result = "REPL Exception: $_"
+          $result = LREP::Response.new(output => "REPL Exception: $_");
         }
       }
       $result;
@@ -39,7 +53,7 @@ class LREP {
     # say "Building print_middlware with [{&handler.perl}]";
     -> $input {
       my $result = &handler($input);
-      say $result;
+      say $result.output;
       $result;
     }
   }
@@ -50,19 +64,14 @@ class LREP {
     -> $input {
       my $cmd = linenoise '> ';
       last if !$cmd.defined;
-      my $result = &handler($cmd);
+      $input.cmd = $cmd;
+      my $result = &handler($input);
       $result;
     }
   }
 
   method compose_middleware(*@middleware) {
-    # &.composed-handler ||= -> $input { say "Input: [$input]"; $input };
-    # for @middleware -> $mid {
-    #   say "Mid: {$mid.perl}";
-    #   &.composed-handler = $mid(&.composed-handler);
-    # say "Middleware: {&.composed-handler.perl}";
-    # }
-    $.composed ||= -> $input { $input };
+    $.composed ||= -> $input { say "Input: [$input]"; $input };
     for @middleware -> $mid {
       # say "Mid: {$mid.perl}";
       $.composed = $mid($.composed);
@@ -72,24 +81,13 @@ class LREP {
 
   method start {
     self.compose_middleware(
-      &ident_middleware,
+      &null_middleware,
       &eval_middleware,
       &read_middleware,
       &print_middleware);
-    # say "Middleware: {&.composed-handler.perl}";
     # say "Middleware: {$.composed.perl}";
-    # my $repl =
-    #   self.print_middleware(
-    #     self.read_middleware(
-    #       self.eval_middleware(
-    #         self.ident_middleware(-> $input {})
-    #       )
-    #     )
-    #   );
     loop {
-      # $repl("");
-      # &.composed-handler("");
-      &($.composed)("");
+      &($.composed)(LREP::Request.new);
     }
   }
 
