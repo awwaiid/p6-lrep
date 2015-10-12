@@ -1,0 +1,11 @@
+{
+    "name" : "LREP",
+    "version" : "0.1.0",
+    "description" : "A fun little REPL",
+    "author" : "Brock Wilcox",
+    "provides" : {
+        "LREP" : "lib/LREP.pm6"
+    },
+    "depends" : [ ],
+    "source-url" : "git://github.com/awwaiid/p6-lrep.git"
+}
