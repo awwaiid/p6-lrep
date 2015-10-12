@@ -12,14 +12,14 @@ class LREP {
 
   # Ignore &handler
   sub ident_middleware(&handler) {
-    say "Building ident_middlware with [{&handler.perl}]";
+    # say "Building ident_middlware with [{&handler.perl}]";
     -> $input {
       $input;
     }
   }
 
   sub eval_middleware(&handler) {
-    say "Building eval_middlware with [{&handler.perl}]";
+    # say "Building eval_middlware with [{&handler.perl}]";
     -> $input {
       my $result = "";
       if $input {
@@ -36,7 +36,7 @@ class LREP {
   }
 
   sub print_middleware(&handler) {
-    say "Building print_middlware with [{&handler.perl}]";
+    # say "Building print_middlware with [{&handler.perl}]";
     -> $input {
       my $result = &handler($input);
       say $result;
@@ -46,7 +46,7 @@ class LREP {
 
   # Ignores input and instead gets data from the user
   sub read_middleware(&handler) {
-    say "Building read_middlware with [{&handler.perl}]";
+    # say "Building read_middlware with [{&handler.perl}]";
     -> $input {
       my $cmd = linenoise '> ';
       last if !$cmd.defined;
@@ -62,11 +62,11 @@ class LREP {
     #   &.composed-handler = $mid(&.composed-handler);
     # say "Middleware: {&.composed-handler.perl}";
     # }
-    $.composed ||= -> $input { say "Input: [$input]"; $input };
+    $.composed ||= -> $input { $input };
     for @middleware -> $mid {
-      say "Mid: {$mid.perl}";
+      # say "Mid: {$mid.perl}";
       $.composed = $mid($.composed);
-    say "Middleware: {$.composed.perl}";
+      # say "Middleware: {$.composed.perl}";
     }
   }
 
@@ -77,7 +77,7 @@ class LREP {
       &read_middleware,
       &print_middleware);
     # say "Middleware: {&.composed-handler.perl}";
-    say "Middleware: {$.composed.perl}";
+    # say "Middleware: {$.composed.perl}";
     # my $repl =
     #   self.print_middleware(
     #     self.read_middleware(

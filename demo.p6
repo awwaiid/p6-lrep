@@ -1,14 +1,22 @@
 #!/usr/bin/env perl6
 
-use lib '.';
-use Repl;
+use lib 'lib';
+use LREP;
 
-# sub hmm {
-#   my $x = "hello";
-#   Repl::here;
-#   say $x;
-# }
+sub hmm {
+  my $x = "hello";
+  LREP::here;
+  say $x;
+}
 
-Repl::here;
-# hmm;
+hmm;
+
+# So run this like:
+#
+# > $x
+# hello
+# > $x = "bye"
+# bye
+# > ^D
+# bye
 
