@@ -6,6 +6,6 @@
     "provides" : {
         "LREP" : "lib/LREP.pm6"
     },
-    "depends" : [ ],
-    "source-url" : "git://github.com/awwaiid/p6-lrep.git"
+    "depends" : [ "Linenoise" ],
+    "source-url" : "git://github.com/awwaiid/p6-lrep.git@master"
 }
