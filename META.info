@@ -7,5 +7,5 @@
         "LREP" : "lib/LREP.pm6"
     },
     "depends" : [ "Linenoise" ],
-    "source-url" : "git://github.com/awwaiid/p6-lrep.git@master"
+    "source-url" : "git://github.com/awwaiid/p6-lrep.git"
 }
