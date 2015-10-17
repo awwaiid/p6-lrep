@@ -29,23 +29,55 @@ class LREP {
         my $eval_result = EVAL $message.input, context => $message.context;
         # TODO: Does the result here overwrite input? output? new thing?
         $message.input = $eval_result;
-        my $result = &handler($message);
-        $result;
-      }
-      CATCH {
-        default {
-          $message = LREP::Message.new(output => "REPL Exception: $_");
+        &handler($message);
+        $message;
+        CATCH {
+          default {
+            # say "Message: [ $message ]";
+            $message.output = "REPL Exception: $_";
+            $message;
+          }
         }
       }
       $message;
     }
   }
 
+  # Lets you do ">ls", short-cuts further plugins
+  sub shell_middleware(&handler) {
+    -> $message {
+      if $message.input ~~ /^\>/ {
+        my $input = $message.input;
+        $input ~~ s/^\>//;
+        my $eval_result = shell $input;
+        $message.input = $eval_result;
+        $message
+      } else {
+        &handler($message);
+      }
+    }
+
+  }
+
   sub print_middleware(&handler) {
     -> $message {
       my $result = &handler($message);
+      # say "result: [ $result ]";
       say $result.output;
       $result;
+    }
+  }
+
+  # Lets you do "look" to see what's around, short-cuts further plugins
+  sub look_middleware(&handler) {
+    -> $message {
+      if $message.input ~~ /^look$/ {
+        my @vars = $message.context.keys;
+        $message.output = "VARS: {@vars}";
+      } else {
+        &handler($message);
+      }
+      $message;
     }
   }
 
@@ -56,6 +88,7 @@ class LREP {
       last if !$cmd.defined;
       $message.input = $cmd;
       my $result = &handler($message);
+      # say "ReadHandleResult: [ $result ]";
       $result;
     }
   }
@@ -70,6 +103,8 @@ class LREP {
   method start {
     self.add_middleware(&echo_middleware);
     self.add_middleware(&eval_middleware);
+    # self.add_middleware(&shell_middleware);
+    self.add_middleware(&look_middleware);
     self.add_middleware(&read_middleware);
     self.add_middleware(&print_middleware);
     loop {
