@@ -1,14 +1,10 @@
 
-class LREP::Request {
+class LREP::Message {
   has $.context is rw;
-  has $.cmd is rw;
-}
-
-class LREP::Response {
+  has $.input is rw = "";
   has $.output is rw = "";
-
   method append($text) {
-    $.output ~= $text;
+    $.output = $text;
   }
 }
 
@@ -16,43 +12,38 @@ class LREP {
 
   use Linenoise;
 
-  my $context;
   has $.context is rw;
-  has &.composed-handler is rw;
-
-  # my $composed;
   has $.composed is rw;
 
   # Ignore &handler
-  sub null_middleware(&handler) {
-    # say "Building ident_middlware with [{&handler.perl}]";
-    -> $input {
-      LREP::Response.new(output => $input.cmd);
+  sub echo_middleware(&handler) {
+    -> $message {
+      $message.append($message.input);
+      $message;
     }
   }
 
   sub eval_middleware(&handler) {
-    # say "Building eval_middlware with [{&handler.perl}]";
-    -> $input {
-      my $result = LREP::Response.new;
-      if $input {
-        my $eval_result = EVAL $input, context => $context;
-        $input.cmd = $eval_result;
-        $result = &handler($result);
+    -> $message {
+      if $message {
+        my $eval_result = EVAL $message.input, context => $message.context;
+        # TODO: Does the result here overwrite input? output? new thing?
+        $message.input = $eval_result;
+        my $result = &handler($message);
+        $result;
       }
       CATCH {
         default {
-          $result = LREP::Response.new(output => "REPL Exception: $_");
+          $message = LREP::Message.new(output => "REPL Exception: $_");
         }
       }
-      $result;
+      $message;
     }
   }
 
   sub print_middleware(&handler) {
-    # say "Building print_middlware with [{&handler.perl}]";
-    -> $input {
-      my $result = &handler($input);
+    -> $message {
+      my $result = &handler($message);
       say $result.output;
       $result;
     }
@@ -60,39 +51,35 @@ class LREP {
 
   # Ignores input and instead gets data from the user
   sub read_middleware(&handler) {
-    # say "Building read_middlware with [{&handler.perl}]";
-    -> $input {
+    -> $message {
       my $cmd = linenoise '> ';
       last if !$cmd.defined;
-      $input.cmd = $cmd;
-      my $result = &handler($input);
+      $message.input = $cmd;
+      my $result = &handler($message);
       $result;
     }
   }
 
-  method compose_middleware(*@middleware) {
-    $.composed ||= -> $input { say "Input: [$input]"; $input };
+  method add_middleware(*@middleware) {
+    $.composed ||= -> $message { $message };
     for @middleware -> $mid {
-      # say "Mid: {$mid.perl}";
       $.composed = $mid($.composed);
-      # say "Middleware: {$.composed.perl}";
     }
   }
 
   method start {
-    self.compose_middleware(
-      &null_middleware,
-      &eval_middleware,
-      &read_middleware,
-      &print_middleware);
-    # say "Middleware: {$.composed.perl}";
+    self.add_middleware(&echo_middleware);
+    self.add_middleware(&eval_middleware);
+    self.add_middleware(&read_middleware);
+    self.add_middleware(&print_middleware);
     loop {
-      &($.composed)(LREP::Request.new);
+      my $blank_message = LREP::Message.new(context => $.context);
+      &($.composed)($blank_message);
     }
   }
 
   our sub here {
-    $context = CALLER::;
+    my $context = CALLER::;
     my $repl = LREP.new(context => $context);
     $repl.start;
   }
