@@ -1,7 +1,7 @@
 {
     "name" : "LREP",
     "version" : "0.1.1",
-    "description" : "A fun little REPL",
+    "description" : "A fun little REPL inspired by Pry, nREPL, and others.",
     "author" : "Brock Wilcox",
     "provides" : {
         "LREP" : "lib/LREP.pm6"
