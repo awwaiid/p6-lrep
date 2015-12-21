@@ -17,7 +17,7 @@ class LREP {
   # Ignore &handler
   sub echo_middleware(&handler) {
     -> $message {
-      $message.append($message.input);
+      $message.input = $message.input;
       $message;
     }
   }
@@ -32,8 +32,7 @@ class LREP {
         $message;
         CATCH {
           default {
-            # say "Message: [ $message ]";
-            $message.output = "REPL Exception: $_";
+            $message.output.say("REPL Exception: $_");
             $message;
           }
         }
@@ -62,7 +61,7 @@ class LREP {
     -> $message {
       my $result = &handler($message);
       # say "result: [ $result ]";
-      say $result.output;
+      say ~$result.output;
       $result;
     }
   }
@@ -72,7 +71,7 @@ class LREP {
     -> $message {
       if $message.input ~~ /^look$/ {
         my @vars = $message.context.keys;
-        $message.output = "VARS: {@vars}";
+        $message.output.say("VARS: {@vars}");
       } else {
         &handler($message);
       }

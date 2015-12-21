@@ -52,6 +52,12 @@ sub foo {
   say 'EVAL         callframe(3) file/line:' ~ EVAL('callframe(3).file ~ ":" ~ callframe(3).line');
   say 'EVAL LEXICAL callframe(3) file/line:' ~ EVAL('callframe(3).file ~ ":" ~ callframe(3).line', context => LEXICAL::);
   say 'EVAL CALLER  callframe(3) file/line:' ~ EVAL('callframe(3).file ~ ":" ~ callframe(3).line', context => CALLER::);
+
+  say "\n\n------------- [EVAL callframe(4) file/line] ---------------";
+  say 'Local        callframe(4) file/line:' ~ callframe(4).file ~ ":" ~ callframe(4).line;
+  say 'EVAL         callframe(4) file/line:' ~ EVAL('callframe(4).file ~ ":" ~ callframe(4).line');
+  say 'EVAL LEXICAL callframe(4) file/line:' ~ EVAL('callframe(4).file ~ ":" ~ callframe(4).line', context => LEXICAL::);
+  say 'EVAL CALLER  callframe(4) file/line:' ~ EVAL('callframe(4).file ~ ":" ~ callframe(4).line', context => CALLER::);
 }
 
 sub bar {
