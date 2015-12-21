@@ -1,15 +1,14 @@
 
 class LREP::Message {
+  use IO::String;
   has $.context is rw;
   has $.input is rw = "";
-  has $.output is rw = "";
-  method append($text) {
-    $.output = $text;
-  }
+  has IO::String $.output is rw = IO::String.new;
 }
 
 class LREP {
 
+  use MONKEY-SEE-NO-EVAL;
   use Linenoise;
 
   has $.context is rw;
