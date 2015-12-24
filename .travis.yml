@@ -9,4 +9,4 @@ perl6:
 install:
   - rakudobrew build-panda
   - panda installdeps .
-  - oanda installdeps .
+  - panda installdeps .
