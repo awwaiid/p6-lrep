@@ -14,25 +14,31 @@ class LREP {
   has $.context is rw;
   has $.composed is rw;
 
-  # Ignore &handler
-  sub echo_middleware(&handler) {
+  # Do nothing, end the chain
+  sub null_middleware(&handler) {
     -> $message {
-      $message.input = $message.input;
       $message;
     }
   }
 
+  # Echo input -> output
+  sub echo_middleware(&handler) {
+    -> $message {
+      $message.output.print($message.input);
+      &handler($message);
+    }
+  }
+
+  # Filter input from a code-string to the EVAL result
   sub eval_middleware(&handler) {
     -> $message {
       if $message {
         my $eval_result = EVAL $message.input, context => $message.context;
-        # TODO: Does the result here overwrite input? output? new thing?
-        $message.input = $eval_result;
+        $message.input = $eval_result.gist;
         &handler($message);
-        $message;
         CATCH {
           default {
-            $message.output.say("REPL Exception: $_");
+            $message.output.print("REPL Exception: $_");
             $message;
           }
         }
@@ -48,7 +54,7 @@ class LREP {
         my $input = $message.input;
         $input ~~ s/^\>//;
         my $eval_result = shell $input;
-        $message.input = $eval_result;
+        $message.output.print($eval_result);
         $message
       } else {
         &handler($message);
@@ -57,10 +63,11 @@ class LREP {
 
   }
 
+  # Take the current output and write it to STDOUT
+  # You'll only want this on the CLIENT side of the middleware chain
   sub print_middleware(&handler) {
     -> $message {
       my $result = &handler($message);
-      # say "result: [ $result ]";
       say ~$result.output;
       $result;
     }
@@ -71,7 +78,7 @@ class LREP {
     -> $message {
       if $message.input ~~ /^look$/ {
         my @vars = $message.context.keys;
-        $message.output.say("VARS: {@vars}");
+        $message.output.print("VARS: {@vars}");
       } else {
         &handler($message);
       }
@@ -101,7 +108,7 @@ class LREP {
   method start {
     self.add_middleware(&echo_middleware);
     self.add_middleware(&eval_middleware);
-    # self.add_middleware(&shell_middleware);
+    self.add_middleware(&shell_middleware);
     self.add_middleware(&look_middleware);
     self.add_middleware(&read_middleware);
     self.add_middleware(&print_middleware);
