@@ -1,0 +1,2 @@
+#!/bin/sh
+perl6 -Ilib -MLREP -e LREP::here
