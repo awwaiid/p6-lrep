@@ -1,3 +1,5 @@
+v0.2.0 2015-12-24
+* Add crazy nested lexical scopes to allow new vars
 
 v0.1.4 2015-12-24
 * Fix output

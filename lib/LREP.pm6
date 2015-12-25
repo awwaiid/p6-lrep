@@ -29,11 +29,20 @@ class LREP {
     }
   }
 
+  # Insane self-replacing func that keeps nesting the scope with each eval,
+  # thereby allowing you to create lexical vars
+  our &f;
+  sub context-eval($code, $context) {
+    my $result;
+    &LREP::f ||= -> $c { EVAL($c, context => $context) };
+    &LREP::f('&LREP::f = -> $c { use MONKEY-SEE-NO-EVAL; EVAL($c) }; ' ~ $code);
+  }
+
   # Filter input from a code-string to the EVAL result
   sub eval_middleware(&handler) {
     -> $message {
       if $message {
-        my $eval_result = EVAL $message.input, context => $message.context;
+        my $eval_result = context-eval($message.input, $message.context);
         $message.input = $eval_result.gist;
         &handler($message);
         CATCH {
