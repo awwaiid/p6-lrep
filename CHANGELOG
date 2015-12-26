@@ -1,3 +1,7 @@
+v0.2.1 2015-12-26
+* Record in-memory history
+* Add a cli wrapper, perl6-lrep
+
 v0.2.0 2015-12-24
 * Add crazy nested lexical scopes to allow new vars
 
