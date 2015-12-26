@@ -101,6 +101,7 @@ class LREP {
       my $cmd = linenoise '> ';
       last if !$cmd.defined;
       $message.input = $cmd;
+      linenoiseHistoryAdd($cmd);
       my $result = &handler($message);
       # say "ReadHandleResult: [ $result ]";
       $result;
