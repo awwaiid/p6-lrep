@@ -1,4 +1,5 @@
 {
+    "perl" : "6.*",
     "name" : "LREP",
     "version" : "0.2.1",
     "description" : "A fun little REPL inspired by Pry, nREPL, and others.",
