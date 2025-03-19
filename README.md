@@ -1,5 +1,11 @@
 A fun little REPL for perl6 inspired by Pry, nREPL, and others
 
+> [!WARNING]
+> This project is abandoned! Please check out the much more recent and
+> maintained [REPL](https://raku.land/zef:lizmat/REPL). It has the most
+> important and magical feature -- the ability to add a REPL-powered breakpoint
+> to interactively explore from the middle of your program!
+
 [![Build Status](https://travis-ci.org/awwaiid/p6-lrep.svg?branch=master)](https://travis-ci.org/awwaiid/p6-lrep)
 
 ## EXAMPLE
